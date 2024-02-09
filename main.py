@@ -3,7 +3,9 @@
 import sys
 import argparse
 import random
-
+from tqdm import tqdm
+import numpy as np
+import matplotlib.pyplot as plt
 
 class NapoleonsTomb:
     def __init__(self):
@@ -159,8 +161,10 @@ class NapoleonsTomb:
 
 
 def main(args):
-    wins = losses = 0   # Define both to allow early stopping
-    for i in range(args.num_trials):
+    wins = 0
+    losses = 0   # Define both to allow early stopping
+    fractions = np.array([])
+    for i in tqdm(range(args.num_trials)):
         game = NapoleonsTomb()
         result = game.simulate_game()
         # print(result)
@@ -168,7 +172,12 @@ def main(args):
             wins += 1
         else:
             losses += 1
-    print(f"Wins: {wins}, Losses: {losses}, percent: {100 * wins/losses}")
+        win_frac = 100 * wins / (i + 1)
+        fractions = np.append(fractions, win_frac)
+
+    print(f"Wins: {wins}, Losses: {losses}, percent: {100 * win_frac}")
+    plt.plot(fractions)
+    plt.show()
 
 
 if __name__ == "__main__":
