@@ -32,6 +32,8 @@ class NapoleonsTomb:
         # 11: deck
         self.piles[11] = list(range(13)) * 4    # Generate deck, shuffle. Suits are irrelevant. Aces are 0s, KQJ are 10 11 and 12.
         random.shuffle(self.piles[11])
+        # self.piles[11] = [4, 3, 2, 1, 0, 4, 3, 2, 1, 0, 4, 3, 2, 1, 0, 4, 3, 2, 1, 0, 5, 5, 5, 5, 6, 6, 6, 6]
+        # self.piles[11] = [0, 1, 2, 3, 4, 5, 5, 9, 10, 11, 12, 8, 8, 8, 8, 7, 7, 7, 7, 6, 6, 6, 6]
         self.hashmap = {    # What piles can card "key" go on? it can go on self.hashmap.get(key, []).
             0:[5, 6, 7, 8],
             1: [5, 6, 7, 8],
@@ -62,28 +64,38 @@ class NapoleonsTomb:
         num_moves = 0
         while (any([len(self.piles[i]) > 0 for i in range(5, 12)])):    # Win condition: no placeable cards left.
             num_moves += 1
-            print(f"Move {num_moves}: {[len(self.piles[i]) for i in range(len(self.piles))]}")
-            
+            # print(f"Move {num_moves}: {[len(self.piles[i]) for i in range(len(self.piles))]}")
+            # print(f"Piles: {self.piles}")
+            # print(f"Hashmap: {self.hashmap}")
+            # breakpoint()
             # Check discard pile
             if self._attempt_pile_placement(pile_idx=10):
                 continue
 
             # Check spares piles
-            if any([self._attempt_pile_placement(pile_idx=i) for i in range(5, 9)]):
+            elif any([self._attempt_pile_placement(pile_idx=i) for i in range(5, 10)]):
                 continue
 
             # Both failed, so attempt deck placement
-            if self._attempt_pile_placement(pile_idx=11):
+            elif self._attempt_pile_placement(pile_idx=11):
                 continue
             else:
                 if len(self.piles[11]) == 0:
-                    print(f"Failed, {num_moves} moves.")
+                    # print(f"Failed, {num_moves} moves.")
+                    if (all(self.piles[i] == [] for i in [5, 6, 7, 8, 9, 10, 11])) and \
+                        (all(self.piles[i] == [6, 7, 8, 9, 10, 11, 12]) for i in [0, 1, 2, 3]) and \
+                        self.piles[4] == [5, 4, 3, 2, 1, 0, 5, 4, 3, 2, 1, 0, 5, 4, 3, 2, 1, 0, 5, 4, 3, 2, 1, 0]:
+                            breakpoint()
                     return False    # Discard is still full, but couldn't place it or anything else and there's nothing left to draw
                 else:
-                    print(f"Place a {self.piles[11][-1]} on the discard pile")
+                    # print(f"Placed a {self.piles[11][-1]} on the discard pile")
                     self.piles[10].append(self.piles[11].pop())
 
-        print(f"Succeeded, {num_moves} moves")
+        # print(f"Succeeded, {num_moves} moves")
+        if not ((all(self.piles[i] == [] for i in [5, 6, 7, 8, 9, 10, 11])) and \
+            (all(self.piles[i] == [6, 7, 8, 9, 10, 11, 12]) for i in [0, 1, 2, 3]) and \
+            self.piles[4] == [5, 4, 3, 2, 1, 0, 5, 4, 3, 2, 1, 0, 5, 4, 3, 2, 1, 0, 5, 4, 3, 2, 1, 0]):
+                breakpoint()
         return True
 
 
@@ -93,21 +105,38 @@ class NapoleonsTomb:
         Returns:
             bool: Whether placement was successful. 
         """
-        print(f"Placing card from pile: {pile_idx}")
+        # print(f"Placing card from pile: {pile_idx}")
+        destination = None
         if len(self.piles[pile_idx]) > 0:
             card_val = self.piles[pile_idx][-1]
             if len(self.hashmap.get(card_val, [])) > 0:
                 # If moving from a spares pile, cannot move to other spares piles.
                 if pile_idx in [5, 6, 7, 8]:
+                    # These piles can only move to 0, 1, 2, 3 or 9.
                     for i, val in enumerate(self.hashmap[card_val]):
                         if val <= 4 or val == 9:
                             destination = self.hashmap[card_val].pop(i)
-                    return False    # No valid target pile found.
+                            # Re-add as a valid destination everywhere
+                            for k, v in self.hashmap.items():
+                                self.hashmap[k] = v + [pile_idx]
+                            break
+                    if destination is None:
+                        return False    # No valid target pile found.
+                elif pile_idx == 9:
+                    if len(self.hashmap[card_val]) > 1:
+                        for i, val in enumerate(self.hashmap[card_val]):
+                            if val != 9:
+                                destination = self.hashmap[card_val].pop(i)
+                    elif self.hashmap[card_val] == 9:
+                        return False
+                    else:
+                        destination = self.hashmap[card_val].pop()
+
                 else:
                     destination = self.hashmap[card_val].pop()
                 self.piles[destination].append(self.piles[pile_idx].pop())
 
-                print(f"Placed a {card_val} on pile {destination}")
+                # print(f"Placed a {card_val} on pile {destination}")
                 if destination in [0, 1, 2, 3]: # 7s: pile grows upwards
                     card_val += 1
                     self.hashmap[card_val] = self.hashmap.get(card_val, []) + [destination]
@@ -120,6 +149,9 @@ class NapoleonsTomb:
                             for i, val in enumerate(self.hashmap[d]):
                                 if val == destination:
                                     self.hashmap[d].pop(i)
+                elif destination == 9:
+                    if len(self.piles[destination]) == 4:
+                        breakpoint()    # this shouldn't happen
 
                 return True
     
@@ -131,12 +163,13 @@ def main(args):
     for i in range(args.num_trials):
         game = NapoleonsTomb()
         result = game.simulate_game()
-        print(result)
+        # print(result)
         if result:
             wins += 1
         else:
             losses += 1
-    print(f"Wins: {wins}, Losses: {losses}")
+    print(f"Wins: {wins}, Losses: {losses}, percent: {100 * wins/losses}")
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
