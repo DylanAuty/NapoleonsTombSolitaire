@@ -1,6 +1,6 @@
 # Napoleon's Tomb Simulator
 
-This is a program to simulate a solitaire game called "Napoleon's Tomb", played with a standard deck of 52 playing cards. [Here is a YouTube video (not mine) explaining the rules](https://www.youtube.com/watch?v=0jcmCQDrc4c) (or see [Rules section below](##Rules)).
+This is a program to simulate a solitaire game called "Napoleon's Tomb", played with a standard deck of 52 playing cards. [Here is a YouTube video (not mine) explaining the rules](https://www.youtube.com/watch?v=0jcmCQDrc4c) (or see [Rules section below](#rules)).
 
 The aim is to numerically find the chance of winning a given hand by simulating `n` trials. Simply run:
 ```
