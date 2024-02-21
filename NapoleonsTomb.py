@@ -34,14 +34,15 @@ class NapoleonsTomb:
         # self.piles[11] = [4, 3, 2, 1, 0, 4, 3, 2, 1, 0, 4, 3, 2, 1, 0, 4, 3, 2, 1, 0, 5, 5, 5, 5, 6, 6, 6, 6]
         # self.piles[11] = [0, 1, 2, 3, 4, 5, 5, 9, 10, 11, 12, 8, 8, 8, 8, 7, 7, 7, 7, 6, 6, 6, 6]
         self.piles[11] = [6, 8, 3, 6, 1, 8, 10, 6, 8, 7, 2, 8, 5, 11, 7, 0, 5, 10, 7, 2, 4, 3, 2, 2, 12, 10, 0, 4, 11, 0, 9, 12, 3, 12, 4, 7, 1, 9, 9, 1, 1, 3, 9, 0, 5, 12, 11, 6, 10, 11, 4, 5]
+        
         self.hashmap = {    # What piles can a given card go on? it can go on self.hashmap.get(card, []).
             0:[5, 6, 7, 8],
             1: [5, 6, 7, 8],
             2: [5, 6, 7, 8],
             3: [5, 6, 7, 8],
             4: [5, 6, 7, 8],
-            5: [4, 9],
-            6: [0, 1, 2, 3],
+            5: [4, 5, 6, 7, 8, 9],
+            6: [0, 1, 2, 3, 5, 6, 7, 8],
             7: [5, 6, 7, 8],
             8: [5, 6, 7, 8],
             9: [5, 6, 7, 8],
@@ -64,6 +65,47 @@ class NapoleonsTomb:
         print("##### Hashmap:")
         for k, v in self.hashmap.items():
             print(f"{k}: {v}")
+
+
+    def _check_hashmap(self) -> bool:
+        """ Check that the hashmap is correct by recomputing it."""
+        return self.hashmap == self._rebuild_get_hashmap()
+
+
+    def _rebuild_get_hashmap(self) -> dict:
+        """ Build the hashmap from scratch and return it.
+
+        Returns:
+            dict: The rebuilt hashmap, with 12 items. 
+         """
+        hashmap = {}
+        for i, p in enumerate(self.piles):
+            top_card = p[-1] if len(p) > 0 else None
+            if i <= 3:  # 7s
+                if top_card is None:    # Empty pile: accepts 7s only.
+                    hashmap[6] = hashmap.get(6, []) + [i]
+                else:
+                    new_val = top_card + 1
+                    hashmap[new_val] = hashmap.get(new_val, []) + [i]
+            elif i == 4:    # 6s
+                if top_card is None or top_card == 0:    # Empty pile or ace on top: accepts 6s only.
+                    hashmap[5] = hashmap.get(5, []) + [i]
+                else:
+                    new_val = top_card - 1
+                    hashmap[new_val] = hashmap.get(new_val, []) + [i]
+            elif i >= 5 and i <= 8:
+                if len(p) == 0:
+                    for j in range(13):
+                        hashmap[j] = hashmap.get(j, []) + [i]
+            elif i == 9:    # Spare 6s
+                if len(p) < 4:
+                    hashmap[5] = hashmap.get(5, []) + [i]
+
+            # 10 == discard. Ignored as it's the last place anything should go.
+            # 11 == deck. things never go on the deck.
+
+        return hashmap
+
 
 
     def simulate_game(self) -> bool:
