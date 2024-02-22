@@ -33,7 +33,7 @@ class NapoleonsTomb:
         random.shuffle(self.piles[11])
         # self.piles[11] = [4, 3, 2, 1, 0, 4, 3, 2, 1, 0, 4, 3, 2, 1, 0, 4, 3, 2, 1, 0, 5, 5, 5, 5, 6, 6, 6, 6]
         # self.piles[11] = [0, 1, 2, 3, 4, 5, 5, 9, 10, 11, 12, 8, 8, 8, 8, 7, 7, 7, 7, 6, 6, 6, 6]
-        self.piles[11] = [6, 8, 3, 6, 1, 8, 10, 6, 8, 7, 2, 8, 5, 11, 7, 0, 5, 10, 7, 2, 4, 3, 2, 2, 12, 10, 0, 4, 11, 0, 9, 12, 3, 12, 4, 7, 1, 9, 9, 1, 1, 3, 9, 0, 5, 12, 11, 6, 10, 11, 4, 5]
+        # self.piles[11] = [6, 8, 3, 6, 1, 8, 10, 6, 8, 7, 2, 8, 5, 11, 7, 0, 5, 10, 7, 2, 4, 3, 2, 2, 12, 10, 0, 4, 11, 0, 9, 12, 3, 12, 4, 7, 1, 9, 9, 1, 1, 3, 9, 0, 5, 12, 11, 6, 10, 11, 4, 5]
         
         # self.hashmap = {    # What piles can a given card go on? On self.hashmap.get(card, []).
         #     0:[5, 6, 7, 8],
@@ -56,12 +56,12 @@ class NapoleonsTomb:
 
     def print_state(self):
         """ Pretty-print the game state. """
-        print(f"######## Piles:")
-        for i, p in enumerate(self.piles):
-            print(f"({i}) {self.pile_names[i]}: {p}")
         print("##### Hashmap:")
         for k, v in self.hashmap.items():
             print(f"{k}: {v}")
+        print(f"######## Piles:")
+        for i, p in enumerate(self.piles):
+            print(f"({i}) {self.pile_names[i]}: {p}")
 
 
     def _check_hashmap(self) -> bool:
@@ -144,19 +144,32 @@ class NapoleonsTomb:
             num_moves += 1
             # print(f"Move {num_moves}: {[len(self.piles[i]) for i in range(len(self.piles))]}")
 
-            self.print_state()
-            breakpoint()
+            # self.print_state()
+            # breakpoint()
 
             # Check discard pile
-            if self._attempt_pile_placement(pile_idx=10):
+            if self._attempt_pile_placement(source_pile_idx=10):
                 continue
 
             # Check spares piles
-            elif any([self._attempt_pile_placement(pile_idx=i) for i in range(5, 10)]):
+            elif self._attempt_pile_placement(source_pile_idx=5):
+                # print("Succeeded placement from 5")
+                continue
+            elif self._attempt_pile_placement(source_pile_idx=6):
+                # print("Succeeded placement from 6")
+                continue
+            elif self._attempt_pile_placement(source_pile_idx=7):
+                # print("Succeeded placement from 7")
+                continue
+            elif self._attempt_pile_placement(source_pile_idx=8):
+                # print("Succeeded placement from 8")
+                continue
+            elif self._attempt_pile_placement(source_pile_idx=9):
+                # print("Succeeded placement from 9")
                 continue
 
             # Both failed, so attempt deck placement
-            elif self._attempt_pile_placement(pile_idx=11):
+            elif self._attempt_pile_placement(source_pile_idx=11):
                 continue
             else:
                 if len(self.piles[11]) == 0:
@@ -178,7 +191,7 @@ class NapoleonsTomb:
         return True
 
 
-    def _attempt_pile_placement(self, pile_idx: int) -> bool:
+    def _attempt_pile_placement(self, source_pile_idx: int) -> bool:
         """ Try to place the top card of a given pile on one of the other piles.
 
         Params:
@@ -187,10 +200,16 @@ class NapoleonsTomb:
         Returns:
             bool: Whether placement was successful. 
         """
-        destination = None
+        # print(f"Attempting placement from {source_pile_idx}")
+        dest_pile_idx = None
+
+        # Define definitely invalid destination piles
+        invalid_dest_idxs = [source_pile_idx]   # Disallow self-moves
+        if source_pile_idx >= 5 and source_pile_idx <= 9:
+            invalid_dest_idxs += [5, 6, 7, 8]   # Disallow spare-to-spare moves
 
         # Find destination
-        top_card = self.piles[pile_idx][-1] if len(self.piles[pile_idx]) > 0 else None
+        top_card = self.piles[source_pile_idx][-1] if len(self.piles[source_pile_idx]) > 0 else None
         if top_card is None:
             return False  # Nothing to place, so nothing to do
         else:
@@ -198,71 +217,18 @@ class NapoleonsTomb:
             if len(valid_destinations) == 0:
                 return False
             else:
-                for i, d in valid_destinations.enumerate():
-                    if d != pile_idx:
-                        destination = self.hashmap.get(top_card, []).pop(i)
+                for i, d in enumerate(valid_destinations):
+                    if d not in invalid_dest_idxs:
+                        dest_pile_idx = self.hashmap[top_card]
                         break
         
                 # Execute move and update hashmap
-                if destination is None:
+                if dest_pile_idx is None:
                     return False
                 else:
-                    self.piles[destination].append(self.piles[pile_idx].pop(-1))
+                    self.piles[dest_pile_idx].append(self.piles[source_pile_idx].pop(-1))
+                    self.hashmap = self._rebuild_get_hashmap()
+                    self.reverse_hashmap = self._rebuild_get_reverse_hashmap()
+                    return True
                     
-
-        return
-
-        if pile_idx == 11:
-            breakpoint()
-        if len(self.piles[pile_idx]) > 0:
-            card_val = self.piles[pile_idx][-1]
-            if len(self.hashmap.get(card_val, [])) > 0:
-                # If moving from a spares pile, cannot move to other spares piles.
-                if pile_idx in [5, 6, 7, 8]:
-                    # These piles can only move to 0, 1, 2, 3 or 9.
-                    for i, val in enumerate(self.hashmap[card_val]):
-                        if val <= 4 or val == 9:
-                            destination = self.hashmap[card_val].pop(i)
-                            # Re-add as a valid destination everywhere
-                            for k, v in self.hashmap.items():
-                                self.hashmap[k] = v + [pile_idx]
-                            break
-                    if destination is None:
-                        return False    # No valid target pile found.
-                elif pile_idx == 9:
-                    if len(self.hashmap[card_val]) > 1:
-                        for i, val in enumerate(self.hashmap[card_val]):
-                            if val != 9:
-                                destination = self.hashmap[card_val].pop(i)
-                    elif self.hashmap[card_val] == 9:
-                        return False
-                    else:
-                        destination = self.hashmap[card_val].pop()
-
-                else:
-                    if len(self.hashmap[card_val]) > 0:
-                        destination = self.hashmap[card_val].pop()
-                    else:
-                        return False
-                self.piles[destination].append(self.piles[pile_idx].pop())
-
-                # print(f"Placed a {card_val} on pile {destination}")
-                if destination in [0, 1, 2, 3]: # 7s: pile grows upwards
-                    card_val += 1
-                    self.hashmap[card_val] = self.hashmap.get(card_val, []) + [destination]
-                elif destination == 4:  # 6s: pile growns downwards
-                    card_val = (card_val - 1) % 6
-                    self.hashmap[card_val] = self.hashmap.get(card_val, []) + [destination]
-                elif destination in [5, 6, 7, 8]:   # Spares pile is occupied now; remove as candidate everywhere.
-                    if len(self.reverse_hashmap[destination]) > 1:
-                        for d in self.reverse_hashmap[destination]:
-                            for i, val in enumerate(self.hashmap[d]):
-                                if val == destination:
-                                    self.hashmap[d].pop(i)
-                elif destination == 9:
-                    if len(self.piles[destination]) < 4 and 9 not in self.hashmap[5]:
-                        self.hashmap[5].append(9)
-
-                return True
-    
         return False
