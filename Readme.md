@@ -1,14 +1,17 @@
-# Napoleon's Tomb Simulator
+# Napoleon's Tomb Solitaire Simulator
 
-This is a program to simulate a solitaire game called "Napoleon's Tomb", played with a standard deck of 52 playing cards. [Here is a YouTube video (not mine) explaining the rules](https://www.youtube.com/watch?v=0jcmCQDrc4c) (or see [Rules section below](#rules)).
+A Python program run simulations of the solitaire game called "Napoleon's Tomb", played with a standard deck of 52 playing cards. [Here is a YouTube video (not mine) explaining the rules](https://www.youtube.com/watch?v=0jcmCQDrc4c) (or see [Rules section below](#rules)).
 
-The aim is to numerically find the chance of winning a given hand by simulating `n` trials. Simply run:
+The aim is to numerically find the chance of winning a given hand by simulating `n` trials. Empirically, the win rate is approx. 19.756%. (from 100000 trials). 
+
+Simply run:
 ```
 python main.py -n <number_of_trials>
 ```
-where `<number_of_trials>` is the number of trials to run. The program will display a progress bar, and will plot a graph when it's finished showing the change in success rate over time.
+where `<number_of_trials>` is the number of trials to run. The program will display a progress bar and will print the win percentage when finished.
 
-Empirically, the win rate is approx. 19.756%. (from 100000 trials).
+The optional `-p final` or `-p live` options both show a graph showing win percentage against number of iterations, with the former displaying at the end and the latter showing it live. The live graph is considerably slower.
+
 
 ## Requirements
 Requires `tqdm`, `numpy` and `matplotlib`. Install with pip or conda (`oython -m pip install matplotlib numpy tqdm` or `conda install matplotlib numpy tqdm`). Tested with Python 3.10.10 but will probably work with most other versions.
