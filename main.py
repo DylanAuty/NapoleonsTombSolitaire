@@ -1,6 +1,5 @@
 # Napoleons Tomb simulator
 # Simulates a version of the Napoleon's Tomb solitaire game to work out the chances of winning.
-import logging
 import argparse
 from tqdm import tqdm
 import numpy as np

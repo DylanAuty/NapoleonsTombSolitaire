@@ -8,6 +8,11 @@ python main.py -n <number_of_trials>
 ```
 where `<number_of_trials>` is the number of trials to run. The program will display a progress bar, and will plot a graph when it's finished showing the change in success rate over time.
 
+Empirically, the win rate is approx. 19.756%. (from 100000 trials).
+
+## Requirements
+Requires `tqdm`, `numpy` and `matplotlib`. Install with pip or conda.
+
 ## Rules
 Napoleon's Tomb is a building game, in which the aim is to have 5 piles of cards: four going from 7-K, and one going from 6-A four times. The player wins if this is the case, and if there are 
 
