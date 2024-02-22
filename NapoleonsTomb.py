@@ -133,6 +133,51 @@ class NapoleonsTomb:
         return reverse_hashmap
 
 
+    def _attempt_pile_placement(self, source_pile_idx: int) -> bool:
+        """ Try to place the top card of a given pile on one of the other piles.
+
+        Params:
+            pile_idx (int): Index of pile to attempt placement from (not to). 0123 are 7s piles, 4 is 6s, 5678 are spares, 9 is spare 6s, 10 is discard, and 11 is deck.
+
+        Returns:
+            bool: Whether placement was successful. 
+        """
+        # print(f"Attempting placement from {source_pile_idx}")
+        dest_pile_idx = None
+
+        # Define definitely invalid destination piles
+        invalid_dest_idxs = [source_pile_idx]   # Disallow self-moves
+        if source_pile_idx >= 5 and source_pile_idx <= 9:
+            invalid_dest_idxs += [5, 6, 7, 8]   # Disallow spare-to-spare moves
+
+        # Find destination
+        top_card = self.piles[source_pile_idx][-1] if len(self.piles[source_pile_idx]) > 0 else None
+        if top_card is None:
+            return False  # Nothing to place, so nothing to do
+        else:
+            valid_destinations = self.hashmap.get(top_card, [])
+            if len(valid_destinations) == 0:
+                return False
+            else:
+                for i, d in enumerate(valid_destinations):
+                    if d not in invalid_dest_idxs:
+                        dest_pile_idx = self.hashmap[top_card]
+                        break
+        
+                # Execute move and update hashmap
+                if dest_pile_idx is None:
+                    return False
+                else:
+                    self.piles[dest_pile_idx].append(self.piles[source_pile_idx].pop(-1))
+
+                    # Reconcile source and destination hashmaps.
+                    self.hashmap = self._rebuild_get_hashmap()
+                    self.reverse_hashmap = self._rebuild_get_reverse_hashmap()
+                    return True
+                    
+        return False
+    
+
     def simulate_game(self) -> bool:
         """ Simulate one game. Return bool (True if win else False.) 
 
@@ -189,46 +234,3 @@ class NapoleonsTomb:
             self.piles[4] == [5, 4, 3, 2, 1, 0, 5, 4, 3, 2, 1, 0, 5, 4, 3, 2, 1, 0, 5, 4, 3, 2, 1, 0]):
                 breakpoint()
         return True
-
-
-    def _attempt_pile_placement(self, source_pile_idx: int) -> bool:
-        """ Try to place the top card of a given pile on one of the other piles.
-
-        Params:
-            pile_idx (int): Index of pile to attempt placement from (not to). 0123 are 7s piles, 4 is 6s, 5678 are spares, 9 is spare 6s, 10 is discard, and 11 is deck.
-
-        Returns:
-            bool: Whether placement was successful. 
-        """
-        # print(f"Attempting placement from {source_pile_idx}")
-        dest_pile_idx = None
-
-        # Define definitely invalid destination piles
-        invalid_dest_idxs = [source_pile_idx]   # Disallow self-moves
-        if source_pile_idx >= 5 and source_pile_idx <= 9:
-            invalid_dest_idxs += [5, 6, 7, 8]   # Disallow spare-to-spare moves
-
-        # Find destination
-        top_card = self.piles[source_pile_idx][-1] if len(self.piles[source_pile_idx]) > 0 else None
-        if top_card is None:
-            return False  # Nothing to place, so nothing to do
-        else:
-            valid_destinations = self.hashmap.get(top_card, [])
-            if len(valid_destinations) == 0:
-                return False
-            else:
-                for i, d in enumerate(valid_destinations):
-                    if d not in invalid_dest_idxs:
-                        dest_pile_idx = self.hashmap[top_card]
-                        break
-        
-                # Execute move and update hashmap
-                if dest_pile_idx is None:
-                    return False
-                else:
-                    self.piles[dest_pile_idx].append(self.piles[source_pile_idx].pop(-1))
-                    self.hashmap = self._rebuild_get_hashmap()
-                    self.reverse_hashmap = self._rebuild_get_reverse_hashmap()
-                    return True
-                    
-        return False
