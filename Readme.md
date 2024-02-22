@@ -11,18 +11,19 @@ where `<number_of_trials>` is the number of trials to run. The program will disp
 Empirically, the win rate is approx. 19.756%. (from 100000 trials).
 
 ## Requirements
-Requires `tqdm`, `numpy` and `matplotlib`. Install with pip or conda.
+Requires `tqdm`, `numpy` and `matplotlib`. Install with pip or conda (`oython -m pip install matplotlib numpy tqdm` or `conda install matplotlib numpy tqdm`). Tested with Python 3.10.10 but will probably work with most other versions.
 
 ## Rules
-Napoleon's Tomb is a building game, in which the aim is to have 5 piles of cards: four going from 7-K, and one going from 6-A four times. The player wins if this is the case, and if there are 
+Napoleon's Tomb is a building game, in which the aim is to have 5 piles of cards: four going from 7-K, and one going from 6-A four times. The player wins when this is the case (and therefore there are no cards in the discard pile, the deck, or any of the spares piles).
 
 The tableau is split into a 3x3 grid of 9 piles, and a further two piles to the side (plus the deck):
-	- 4 piles (the 7s piles) in the corners of the grid that start at 7 and count up to K,
-	- 4 single-card piles (the spares) at the top, right, left, and bottom edges of the 3x3 grid that hold a single spare card each,
-	- 1 pile (the 6s pile) in the centre of the grid in which cards must count down from 6-A four times consecutively,
-	- A pile (the spare 6s pile) for spare 6s to be kept for later use, if drawn,
-	- A discard pile, in which useless cards are placed.
+- 4 piles (the 7s piles) in the corners of the grid that start at 7 and count up to K,
+- 4 single-card piles (the spares) at the top, right, left, and bottom edges of the 3x3 grid that hold a single spare card each,
+- 1 pile (the 6s pile) in the centre of the grid in which cards must count down from 6-A four times consecutively,
+- A pile (the spare 6s pile) for spare 6s to be kept for later use, if drawn,
+- A discard pile, in which useless cards are placed.
 
+Play proceeds as follows:
 1. The deck is shuffled.
 2. A card is drawn from the top of the deck.
 3. If the card:
