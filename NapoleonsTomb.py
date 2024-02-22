@@ -35,26 +35,23 @@ class NapoleonsTomb:
         # self.piles[11] = [0, 1, 2, 3, 4, 5, 5, 9, 10, 11, 12, 8, 8, 8, 8, 7, 7, 7, 7, 6, 6, 6, 6]
         self.piles[11] = [6, 8, 3, 6, 1, 8, 10, 6, 8, 7, 2, 8, 5, 11, 7, 0, 5, 10, 7, 2, 4, 3, 2, 2, 12, 10, 0, 4, 11, 0, 9, 12, 3, 12, 4, 7, 1, 9, 9, 1, 1, 3, 9, 0, 5, 12, 11, 6, 10, 11, 4, 5]
         
-        self.hashmap = {    # What piles can a given card go on? it can go on self.hashmap.get(card, []).
-            0:[5, 6, 7, 8],
-            1: [5, 6, 7, 8],
-            2: [5, 6, 7, 8],
-            3: [5, 6, 7, 8],
-            4: [5, 6, 7, 8],
-            5: [4, 5, 6, 7, 8, 9],
-            6: [0, 1, 2, 3, 5, 6, 7, 8],
-            7: [5, 6, 7, 8],
-            8: [5, 6, 7, 8],
-            9: [5, 6, 7, 8],
-            10: [5, 6, 7, 8],
-            11: [5, 6, 7, 8],
-            12: [5, 6, 7, 8],
-        }
-
-        self.reverse_hashmap = {}    # I've occupied a pile. Where else in the hashmap do I need to update?
-        for k, v in self.hashmap.items():
-            for vv in v:
-                self.reverse_hashmap[vv] = self.reverse_hashmap.get(vv, []) + [k]
+        # self.hashmap = {    # What piles can a given card go on? On self.hashmap.get(card, []).
+        #     0:[5, 6, 7, 8],
+        #     1: [5, 6, 7, 8],
+        #     2: [5, 6, 7, 8],
+        #     3: [5, 6, 7, 8],
+        #     4: [5, 6, 7, 8],
+        #     5: [4, 5, 6, 7, 8, 9],
+        #     6: [0, 1, 2, 3, 5, 6, 7, 8],
+        #     7: [5, 6, 7, 8],
+        #     8: [5, 6, 7, 8],
+        #     9: [5, 6, 7, 8],
+        #     10: [5, 6, 7, 8],
+        #     11: [5, 6, 7, 8],
+        #     12: [5, 6, 7, 8],
+        # }
+        self.hashmap = self._rebuild_get_hashmap()  # Stores card: valid destination pile mappings (what piles can this card go on?).
+        self.reverse_hashmap = self._rebuild_get_reverse_hashmap()  # Stores pile: valid card placement mappings (what cards can go on this pile?).
 
 
     def print_state(self):
@@ -68,15 +65,20 @@ class NapoleonsTomb:
 
 
     def _check_hashmap(self) -> bool:
-        """ Check that the hashmap is correct by recomputing it."""
+        """ Check that the hashmap is correct by recomputing it.
+        
+        Returns:
+            bool: whether the current hashmap is what it should be based on the state of the piles.
+        """
         return self.hashmap == self._rebuild_get_hashmap()
 
 
     def _rebuild_get_hashmap(self) -> dict:
-        """ Build the hashmap from scratch and return it.
+        """ Build the hashmap from scratch and return it. 
+        Hashmap shows which piles a given card can be placed on.
 
         Returns:
-            dict: The rebuilt hashmap, with 12 items. 
+            dict: The rebuilt hashmap, with 12 items. Keys are card values, values are lists of pile indices
          """
         hashmap = {}
         for i, p in enumerate(self.piles):
@@ -106,6 +108,29 @@ class NapoleonsTomb:
 
         return hashmap
 
+
+    def _check_reverse_hashmap(self) -> bool:
+        """ Confirm the reverse hashmap is correct by fully rebuilding it and confirming. 
+        
+        Returns:
+            bool: Whether or not self.reverse_hashmap is correct.
+        """
+        return self._rebuild_get_reverse_hashmap() == self.reverse_hashmap
+    
+
+    def _rebuild_get_reverse_hashmap(self) -> dict:
+        """ Build the reverse hashmap from the hashmap. 
+        Reverse hashmap shows what cards are mapped to which piles in the hashmap. 
+        
+        Returns:
+            dict: the reverse_hashmap. Keys are card values, values are pile indices.
+        """
+        reverse_hashmap = {}    # Use a pile index to look up which cards have it as a valid destination.
+        for k, v in self.hashmap.items():
+            for vv in v:
+                reverse_hashmap[vv] = reverse_hashmap.get(vv, []) + [k]
+
+        return reverse_hashmap
 
 
     def simulate_game(self) -> bool:
@@ -156,11 +181,36 @@ class NapoleonsTomb:
     def _attempt_pile_placement(self, pile_idx: int) -> bool:
         """ Try to place the top card of a given pile on one of the other piles.
 
+        Params:
+            pile_idx (int): Index of pile to attempt placement from (not to). 0123 are 7s piles, 4 is 6s, 5678 are spares, 9 is spare 6s, 10 is discard, and 11 is deck.
+
         Returns:
             bool: Whether placement was successful. 
         """
-        # print(f"Placing card from pile: {pile_idx}")
         destination = None
+
+        # Find destination
+        top_card = self.piles[pile_idx][-1] if len(self.piles[pile_idx]) > 0 else None
+        if top_card is None:
+            return False  # Nothing to place, so nothing to do
+        else:
+            valid_destinations = self.hashmap.get(top_card, [])
+            if len(valid_destinations) == 0:
+                return False
+            else:
+                for i, d in valid_destinations.enumerate():
+                    if d != pile_idx:
+                        destination = self.hashmap.get(top_card, []).pop(i)
+                        break
+        
+                # Execute move and update hashmap
+                if destination is None:
+                    return False
+                else:
+                    self.piles[destination].append(self.piles[pile_idx].pop(-1))
+                    
+
+        return
 
         if pile_idx == 11:
             breakpoint()
