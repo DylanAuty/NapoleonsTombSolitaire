@@ -131,6 +131,19 @@ class NapoleonsTomb:
                 reverse_hashmap[vv] = reverse_hashmap.get(vv, []) + [k]
 
         return reverse_hashmap
+    
+
+    def _update_hashmaps_after_move(self, source_idx: int, dest_idx: int):
+        """ After a move from pile source_idx to pile dest_idx, update hashmap and reverse_hashmap. 
+        
+        Params:
+            source_idx (int): Pile that card was moved from
+            dest_idx (int): Pile that card was moved to
+        """
+
+        self.hashmap = self._rebuild_get_hashmap()
+        self.reverse_hashmap = self._rebuild_get_reverse_hashmap()
+
 
 
     def _attempt_pile_placement(self, source_pile_idx: int) -> bool:
@@ -161,7 +174,7 @@ class NapoleonsTomb:
             else:
                 for i, d in enumerate(valid_destinations):
                     if d not in invalid_dest_idxs:
-                        dest_pile_idx = self.hashmap[top_card]
+                        dest_pile_idx = self.hashmap[top_card][i]
                         break
         
                 # Execute move and update hashmap
@@ -169,10 +182,7 @@ class NapoleonsTomb:
                     return False
                 else:
                     self.piles[dest_pile_idx].append(self.piles[source_pile_idx].pop(-1))
-
-                    # Reconcile source and destination hashmaps.
-                    self.hashmap = self._rebuild_get_hashmap()
-                    self.reverse_hashmap = self._rebuild_get_reverse_hashmap()
+                    self._update_hashmaps_after_move(source_idx=source_pile_idx, dest_idx=dest_pile_idx)
                     return True
                     
         return False
