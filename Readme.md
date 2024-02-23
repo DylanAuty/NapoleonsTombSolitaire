@@ -12,9 +12,12 @@ where `<number_of_trials>` is the number of trials to run. The program will disp
 
 The optional `-p final` or `-p live` options both show a graph showing win percentage against number of iterations, with the former displaying at the end and the latter showing it live. The live graph is considerably slower.
 
+Below is an example plot from a run of 100000 trials, showing convergence to ~20%:
+
+<img src="assets/100000_trials_plot.png" width="700" alt="Graph showing evolution of overall win rate across 100000 trials, converging at approx. 20%">
 
 ## Requirements
-Requires `tqdm`, `numpy` and `matplotlib`. Install with pip or conda (`oython -m pip install matplotlib numpy tqdm` or `conda install matplotlib numpy tqdm`). Tested with Python 3.10.10 but will probably work with most other versions.
+Requires `tqdm`, `numpy` and `matplotlib`. Install with pip or conda (`python -m pip install matplotlib numpy tqdm` or `conda install matplotlib numpy tqdm`). Tested with Python 3.10.10 but will probably work with most other versions.
 
 ## Rules
 Napoleon's Tomb is a building game, in which the aim is to have 5 piles of cards: four going from 7-K, and one going from 6-A four times. The player wins when this is the case (and therefore there are no cards in the discard pile, the deck, or any of the spares piles).
