@@ -31,25 +31,7 @@ class NapoleonsTomb:
         self.pile_names = ["7s", "7s", "7s", "7s", "6s", "s1", "s2", "s3", "s4", "spare_6s", "discard", "deck"]
         self.piles[11] = list(range(13)) * 4    # Generate deck, shuffle. Suits are irrelevant. Aces are 0s, KQJ are 10 11 and 12.
         random.shuffle(self.piles[11])
-        # self.piles[11] = [4, 3, 2, 1, 0, 4, 3, 2, 1, 0, 4, 3, 2, 1, 0, 4, 3, 2, 1, 0, 5, 5, 5, 5, 6, 6, 6, 6]
-        # self.piles[11] = [0, 1, 2, 3, 4, 5, 5, 9, 10, 11, 12, 8, 8, 8, 8, 7, 7, 7, 7, 6, 6, 6, 6]
-        # self.piles[11] = [6, 8, 3, 6, 1, 8, 10, 6, 8, 7, 2, 8, 5, 11, 7, 0, 5, 10, 7, 2, 4, 3, 2, 2, 12, 10, 0, 4, 11, 0, 9, 12, 3, 12, 4, 7, 1, 9, 9, 1, 1, 3, 9, 0, 5, 12, 11, 6, 10, 11, 4, 5]
-        
-        # self.hashmap = {    # What piles can a given card go on? On self.hashmap.get(card, []).
-        #     0:[5, 6, 7, 8],
-        #     1: [5, 6, 7, 8],
-        #     2: [5, 6, 7, 8],
-        #     3: [5, 6, 7, 8],
-        #     4: [5, 6, 7, 8],
-        #     5: [4, 5, 6, 7, 8, 9],
-        #     6: [0, 1, 2, 3, 5, 6, 7, 8],
-        #     7: [5, 6, 7, 8],
-        #     8: [5, 6, 7, 8],
-        #     9: [5, 6, 7, 8],
-        #     10: [5, 6, 7, 8],
-        #     11: [5, 6, 7, 8],
-        #     12: [5, 6, 7, 8],
-        # }
+
         self.hashmap = self._rebuild_get_hashmap()  # Stores card: valid destination pile mappings (what piles can this card go on?).
         self.reverse_hashmap = self._rebuild_get_reverse_hashmap()  # Stores pile: valid card placement mappings (what cards can go on this pile?).
 
